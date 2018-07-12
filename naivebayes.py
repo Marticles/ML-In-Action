@@ -28,9 +28,7 @@ def setOfWords2Vec(vocabList, inputSet):
     """
     用一个向量存放遍历单词是否出现的结果，出现该单词则设为1
     """
-    # 创建一个元素全为0的向量
-    returnVec = [0] * len(vocabList)  # [0,0......]
-    # 遍历文档中的所有单词，如果出现了词汇表中的单词，则将输出的文档向量中的对应值设为1
+    returnVec = [0] * len(vocabList)
     for word in inputSet:
         if word in vocabList:
             returnVec[vocabList.index(word)] = 1
@@ -38,8 +36,11 @@ def setOfWords2Vec(vocabList, inputSet):
             print('the word: {} is not in my vocabulary'.format(word))
     return returnVec  # returnVec = [0,1,0,1...]
 
+'''
 listposts,listclasses= loadDataSet()
 vocablist = createVocabList(listposts)
 wordvoc = setOfWords2Vec(vocablist,listposts[1])
 print(vocablist)
 print(wordvoc)
+'''
+
