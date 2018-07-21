@@ -48,22 +48,45 @@ def gradAscent(dataMatIn, classLabels):
 # print(gradAscent(dataArr,labelMat))
 
 def stoGradAscent0(dataMatrix, classLabels):
+    """
+    随机梯度下降法
+    """
     dataMatrix = np.array(dataMatrix)
     m, n = np.shape(dataMatrix)
     alpha = 0.001
     weights = np.ones(n)
     for i in range(m):
         h = sigmoid(sum(dataMatrix[i] * weights))
-        error = labelMat[i] - h
-        weights = weights + alpha * dataMatrix[i] * error
-        weights=np.mat(weights).reshape((3,1))
+        error = classLabels[i] - h
+        weights = weights + alpha * dataMatrix[i]* error
+    return weights
+
+def stocGradAscent1(dataMatrix, classLabels, numIter = 150):
+    """
+    改进的随机梯度下降法
+    """
+    dataMatrix = np.array(dataMatrix)
+    m, n = np.shape(dataMatrix)
+    weights = np.ones(n)
+    # i和j的不断增大，导致学习率不断减少，但是不为0
+    for j in range(numIter):
+        dataIndex = list(range(m))
+        for i in range(m):
+            alpha = 4/(1.0+j+i)+0.0001
+            # 随机抽取样本
+            randIndex = int(np.random.uniform(0,len(dataIndex)))
+            h = sigmoid(sum(dataMatrix[randIndex]*weights))
+            error = classLabels[randIndex] - h
+            weights = weights + alpha * error * dataMatrix[randIndex]
+            del(dataIndex[randIndex])
     return weights
 
 def plotBestFit(wei):
     """
     对结果进行可视化
     """
-    weights = wei.getA()  # getA()方法将numpy矩阵转为数组
+    # weights = wei.getA()  # getA()方法将numpy矩阵转为数组
+    weights = wei
     dataMat, labelMat = loadDataSet()
     dataArr = np.array(dataMat)
     n = np.shape(dataArr)[0]
@@ -90,10 +113,8 @@ def plotBestFit(wei):
     plt.show()
 
 # 可视化
-dataArr, labelMat = loadDataSet()
-plotBestFit(stoGradAscent0(dataArr,labelMat))
+# dataArr, labelMat = loadDataSet()
+# plotBestFit(stocGradAscent1(dataArr,labelMat))
 
+# 示例2: 从疝气病症预测病马的死亡率
 
-
-
-# 示例2: 
