@@ -68,7 +68,7 @@ def stocGradAscent1(dataMatrix, classLabels, numIter = 150):
     dataMatrix = np.array(dataMatrix)
     m, n = np.shape(dataMatrix)
     weights = np.ones(n)
-    # i和j的不断增大，导致学习率不断减少，但是不为0
+    # i和j的不断增大令学习率不断减少，但是不为0
     for j in range(numIter):
         dataIndex = list(range(m))
         for i in range(m):
