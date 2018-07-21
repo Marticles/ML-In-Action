@@ -118,3 +118,59 @@ def plotBestFit(wei):
 
 # 示例2: 从疝气病症预测病马的死亡率
 
+def classifyVector(inX, weights):
+    """
+    sigmoid分类器
+    根据权重与特征来计算sigmoid的值，大于0.5返回1，否则返回0
+    """
+    prob = sigmoid(sum(inX*weights))
+    if prob > 0.5:
+        return 1.0
+    else:
+        return 0.0
+
+def colicTest():
+    """
+    在疝气病马数据集中测试分类效果
+    """
+    frTrain = open('HorseColicTraining.txt')
+    frTest = open('HorseColicTest.txt')
+    trainingSet = []
+    trainingLabels = []
+    # 在训练集上训练
+    for line in frTrain.readlines():
+        currLine = line.strip().split('\t')
+        lineArr = []
+        for i in range(21):
+            lineArr.append(float(currLine[i]))
+        trainingSet.append(lineArr)
+        trainingLabels.append(float(currLine[21]))
+    trainWeights = stocGradAscent1(np.array(trainingSet), trainingLabels, 500)
+    errorCount = 0
+    numTestVec = 0.0
+    # 在测试集上进行测试
+    for line in frTest.readlines():
+        numTestVec += 1.0
+        currLine = line.strip().split('\t')
+        lineArr = []
+        for i in range(21):
+            lineArr.append(float(currLine[i]))
+        if int(classifyVector(np.array(lineArr), trainWeights)) != int(currLine[21]):
+            errorCount += 1
+    errorRate = (float(errorCount) / numTestVec)
+    print("the error rate of this test is: %f" % errorRate)
+    return errorRate
+
+
+def multiTest():
+    """
+    调用colicTest()10次并求结果的平均值
+    """
+    numTests = 10
+    errorSum = 0.0
+    for k in range(numTests):
+        errorSum += colicTest()
+    print("after %d iterations the average error rate is: %f" % (numTests, errorSum/float(numTests)))
+
+# 测试结果
+# multiTest()
