@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 from math import log
+import operator
+import pickle
+from treeplotter import *
 
 # 《机器学习实战》 - 第3章 - 决策树
 
@@ -71,8 +74,97 @@ def chooseBestFeatureToSplit(dataSet):
             newEntropy += prob * calcShannonEnt(subDataSet)
         # 信息增益是熵的减少或者是数据无序度的减少
         infoGain = baseEntropy - newEntropy
-        print('infoGain=', infoGain, 'bestFeature=', i, baseEntropy, newEntropy)
+        print('infoGain = ', infoGain, 'bestFeature = ', i, 'baseEntropy = ',baseEntropy,'newEntropy = ', newEntropy)
         if (infoGain > bestInfoGain):
             bestInfoGain = infoGain
             bestFeature = i
     return bestFeature
+
+# myDat, labels = createDataSet()
+# print(chooseBestFeatureToSplit(myDat))
+
+def majorityCnt(classList):
+    """
+    当处理完所有属性后仍有类标签不唯一
+    采用多数表决来决定分类
+    """
+    classCount = {}
+    for vote in classList:
+        if vote not in classCount.keys(): classCount[vote] = 0
+        classCount[vote] += 1
+    sortedClassCount = sorted(classCount.iteritems(), key = operator.itemgetter(1), reverse = True)
+    return sortedClassCount[0][0]
+
+def createTree(dataSet, labels):
+    """
+    递归构造决策树
+    """
+    classList = [example[-1] for example in dataSet]
+    # 如果只有一个类别就直接返回结果
+    if classList.count(classList[0]) == len(classList):
+        return classList[0]
+    # 如果数据集只有1列，那么最初出现label次数最多的一类，作为结果
+    if len(dataSet[0]) == 1:
+        return majorityCnt(classList)
+
+    bestFeat = chooseBestFeatureToSplit(dataSet)
+    bestFeatLabel = labels[bestFeat]
+    myTree = {bestFeatLabel: {}}
+    subLabels = labels[:]
+    del(subLabels[bestFeat])
+    featValues = [example[bestFeat] for example in dataSet]
+    uniqueVals = set(featValues)
+    for value in uniqueVals:
+        # 求出剩余的标签label
+        subLabels = labels[:]
+        # 遍历当前选择特征包含的所有属性值，在每个数据集划分上递归调用函数createTree()
+        myTree[bestFeatLabel][value] = createTree(splitDataSet(dataSet, bestFeat, value), subLabels)
+    return myTree
+
+# myDat, labels = createDataSet()
+# print(createTree(myDat, labels))
+
+def classify(inputTree,featLabels,testVec):
+    """
+    决策树分类函数
+    """
+    firstSides = list(myTree.keys())
+    firstStr = firstSides[0]
+    secondDict = inputTree[firstStr]
+    featIndex = featLabels.index(firstStr)
+    for key in secondDict.keys():
+        if testVec[featIndex]==key:
+            if type(secondDict[key]).__name__=='dict':
+                classLabel=classify(secondDict[key],featLabels,testVec)
+            else: classLabel=secondDict[key]
+    return classLabel
+
+def storeTree(inputTree, filename):
+    """
+    存储决策树
+    """
+    fw = open(filename, 'wb')
+    pickle.dump(inputTree, fw)
+    fw.close
+
+def grabTree(filename):
+    """
+    读取决策树
+    """
+    fr = open(filename, 'rb')
+    return pickle.load(fr)
+
+# myTree = retrieveTree(0)
+# createPlot(myTree)
+
+# 示例1: 使用决策树预测隐形眼镜类型
+
+def testLenses():
+    fr = open('lenses.txt')
+    lenses = [inst.strip().split('\t') for inst in fr.readlines()]
+    lensesLabels = ['age', 'prescript', 'astigmatic', 'tearRate']
+    lensesTree = createTree(lenses, lensesLabels)
+    storeTree(lensesTree, 'trees.txt')
+
+# testLenses()
+# createPlot(grabTree('trees.txt'))
